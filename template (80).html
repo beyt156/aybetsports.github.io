@@ -1,0 +1,268 @@
+<!doctype html>
+
+
+    
+    
+   bu site AYBETWEP katkılarıyla hazırlanmıstır Aybet Sports 
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet" />
+    <script src="https://voetbaluitslagen.be/ranking.min.js" async></script>
+    <style>
+        :root {
+            --primary-accent: #FFD700; /* Altın Sarısı */
+            --dark-bg-1: #121212;
+            --dark-bg-2: #1e1e1e;
+            --dark-bg-3: #2a2a2a;
+            --text-color: #e0e0e0;
+            --text-muted: #888;
+            --error-color: #ff4d4d;
+        }
+        body {
+            font-family: 'Roboto', sans-serif; margin: 0; padding: 20px;
+            background-color: var(--dark-bg-1); color: var(--text-color);
+            display: flex; justify-content: center; align-items: flex-start;
+        }
+        .main-container { width: 100%; max-width: 1200px; }
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid var(--dark-bg-3); padding-bottom: 20px; }
+        .logo { width: 140px; margin-bottom: 15px; }
+        #match-title {
+            font-size: 26px; font-weight: 700; color: var(--primary-accent);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); min-height: 35px;
+        }
+        .content-area { display: flex; gap: 25px; flex-wrap: wrap; }
+        .main-content { flex: 3; min-width: 300px; }
+        .player-section {
+            display: flex; flex-direction: column;
+            background-color: var(--dark-bg-2); border: 1px solid var(--dark-bg-3);
+            border-radius: 12px; overflow: hidden;
+        }
+        .video-wrapper { position: relative; padding-top: 56.25%; background-color: #000; }
+        #video-stream, #iframe-stream {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; border: none;
+        }
+        #player-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            background-color: rgba(0,0,0,0.7); z-index: 10;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+        }
+        #player-overlay.visible { opacity: 1; visibility: visible; }
+        #loading-spinner {
+            border: 5px solid var(--dark-bg-3); border-top: 5px solid var(--primary-accent);
+            border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite; display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #error-message { color: var(--error-color); font-size: 18px; font-weight: 500; display: none; }
+        #player-overlay.is-loading #loading-spinner { display: block; }
+        #player-overlay.has-error #error-message { display: block; }
+        .stream-controls { display: flex; padding: 12px; background-color: var(--dark-bg-3); }
+        .stream-controls button {
+            flex-grow: 1; padding: 12px 20px; font-size: 15px; font-weight: 500;
+            color: var(--text-color); background-color: transparent;
+            border: 2px solid var(--text-muted); border-radius: 8px; cursor: pointer;
+            transition: all 0.3s ease; margin: 0 5px;
+        }
+        .stream-controls button:hover { border-color: var(--primary-accent); color: var(--primary-accent); }
+        .stream-controls button.active {
+            background-color: var(--primary-accent); border-color: var(--primary-accent);
+            color: #000; font-weight: 700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+        .channels-section {
+            flex: 1; min-width: 280px; background-color: var(--dark-bg-2); border: 1px solid var(--dark-bg-3);
+            border-radius: 12px; padding: 15px; max-height: 650px; overflow-y: auto;
+        }
+        .channels-section h3 {
+            margin: 0 0 15px 0; padding-bottom: 10px; text-align: center; font-size: 18px;
+            color: var(--primary-accent); border-bottom: 1px solid var(--dark-bg-3);
+        }
+        .channel {
+            padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer;
+            font-weight: 500; border-left: 4px solid transparent; transition: all 0.2s ease-in-out;
+        }
+        .channel:hover { background-color: var(--dark-bg-3); border-left: 4px solid var(--primary-accent); }
+        .channel.active {
+            background-color: rgba(255, 215, 0, 0.1); border-left: 4px solid var(--primary-accent);
+            font-weight: 700; color: var(--primary-accent);
+        }
+        .channel.inactive { color: var(--text-muted); cursor: not-allowed; opacity: 0.7; }
+        .channel.inactive:hover { background-color: transparent; border-left-color: transparent; }
+        
+        /* --- YENİ EKLENEN BÖLÜMLER İÇİN STİLLER --- */
+        #match-widget-container {
+            background-color: var(--dark-bg-2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid var(--dark-bg-3);
+        }
+        .ad-section {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: var(--dark-bg-2);
+            border: 1px solid var(--dark-bg-3);
+            border-radius: 12px;
+        }
+        .ad-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .ad-section .ad-placeholder {
+            margin-bottom: 20px;
+        }
+        /* --- STİL BİTİŞ --- */
+
+        @media (max-width: 900px) {
+            .content-area { flex-direction: column; }
+            .channels-section { max-height: 300px; order: 3; }
+            .main-content { order: 1; }
+            .ad-section { order: 2; }
+        }
+    </style>
+
+
+    <div class="main-container">
+        <header class="header">
+
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkhr2HZisgzBR7fnEvaHRX5uwBnfR7pikBXTxMCNheW2un_X56sIoPdWbzxKQLWio8VAMysEyHnmo-Uzp3QP_oj4kT31FqdnwIofNuF0wFtE5O8acBzihyhLaSdMh_xOYwcQOIJYosni0hA9h_YvoJh_o0ZSamxgv-NJS5B2HThsFKz6y-mKpAilnU01I/s320/DALL%C2%B7E%202025-01-24%2019.56.56%20-%20Create%20a%20sports-themed%20logo%20for%20&#39;Aybet%20Sports&#39;.%20The%20design%20should%20feature%20a%20dynamic%20and%20energetic%20style%20with%20a%20bold,%20modern%20font.%20Use%20vibrant%20colors%20s.webp" alt="Aybet Sports Logo" class="logo" />
+            <h1 id="match-title">Yayın Seçiniz...</h1>
+<img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjGxFsk-leLt8bB05mfHSquXsze7brNBIRuGYHqVb8WPj0t3mIvvg4xGTFyG1ruxDF-c5aKZK0BgUwM0ACpHL1LFwW4GWBnK8dslI4xwgRrrNP3U_fDhBR03F-nEhPMEu-m3WnrbeuFfuIUsnOfadpjyh3nY-GlaIOBNPb-oijs5Dc_fvHeR3b0H6s0hINk/s484/Ekran%20g%C3%B6r%C3%BCnt%C3%BCs%C3%BC_31-3-2025_101934_aybetlisans.blogspot.com.jpeg" alt="Banner" style="width: 100%; height: auto; display: block; border-radius: 10px;" />
+        </header>
+
+        <div class="content-area">
+            <div class="main-content">
+                <main class="player-section">
+                    <div class="video-wrapper">
+                        <div id="player-overlay"><div id="loading-spinner"></div><span id="error-message"></span></div>
+                        <video id="video-stream" style="display:none;" controls></video>
+                        <iframe id="iframe-stream" style="display:none;" allowfullscreen></iframe>
+                    </div>
+                    <div class="stream-controls">
+                        <button id="btn-iframe" onclick="switchStream('iframe')">Kaynak 1 (Web)</button>
+                        <button id="btn-m3u8" onclick="switchStream('m3u8')">Kaynak 2 (HD)</button>
+                    </div>
+                </main>
+                <div id="match-widget-container">
+                    <a href="https://voetbaluitslagen.be/" data-type="next-match" data-name="super-lig" data-lang="tr" data-style="dark">Voetbaluitslagen</a>
+                </div>
+            </div>
+            
+            <aside class="channels-section">
+                <h3>📺 KANAL LİSTESİ</h3>
+                <div id="channel-list"></div>
+            </aside>
+        </div>
+
+        <aside class="ad-section">
+            
+            </aside></div>
+            <div class="ad-placeholder">
+                 <a href="https://tr.link/ref/220823" target="_blank">
+                    <img src="//tr.link/webroot/img/ref/250x250.jpg" title="Para Kazanmak İçin Tıkla Kayıt OL" />
+                </a>
+            </div>
+        
+
+    
+
+<script>
+    // Bu bölümdeki JavaScript kodunda herhangi bir değişiklik yapılmamıştır.
+    // Öncekiyle aynı şekilde çalışmaktadır.
+    const channels = [
+        { name: 'Bein Sports 1', iframeUrl: 'https://main.uxsyplayer033b6adff1.click/index.php?id=selcuktivibuspor1#poster=https%3A%2F%2Fblogger.googleusercontent.com%2Fimg%2Fb%2FR29vZ2xl%2FAVvXsEj8CEtL3mwmCMomVlu7nEuxd4mSjxav1nUQXt8gfLyFFho-ZsnqKx9gF8-rtf9r1lXctp0vUESwjR9BwBAhfKUl0QNN3Ip3FRUP6oarn2eP64MW_NcF1_vsPWqkYFpTu6TeQHw8dglnEOXbIYurZKZuY8dTwDFkik707MOKVTdhooPYDzPpvkGbCjeRJjO4%2Fs16000%2Fcrtswp-s-min.png&reklamResim=https%3A%2F%2Fblogger.googleusercontent.com%2Fimg%2Fb%2FR29vZ2xl%2FAVvXsEh4aAioTaLgNi0hZqjfBTrtvMpGgO9lKvPL9nzWbPkwKQBj8J5TH5BzFPwD22XroM9AmJwWmZ_MvOV2MfGF5nZ7TvmydGBlhZ6UjU64syprVpNX8o13C0ZrdmsleP6oIgWTvJZW6mhhRPo_sH_K4Gn9gkoIKyxTg_iV3H22PmY3ZAc1D5JCql46yzfDftp7%2Fs16000%2Fpshg-min-min.gif&reklamGidis=https%3A%2F%2Fcutt.ly%2Fselcuksportspsh', m3u8Url: 'https://one.6c53c716e5c951f6.click/live/selcukbeinsports1/playlist.m3u8', active: true },
+        { name: 'Bein Sports 2', iframeUrl: 'https://tinyurl.com/235j9fjm', m3u8Url: 'https://alpha.cf-worker-5867c61e49ce10.workers.dev/live/selcukbeinsports3/playlist.m3u8', active: true },
+        { name: 'TRT Spor', iframeUrl: 'https://www.trtizle.com/canli/tv/trt-spor', m3u8Url: 'https://tv-trttv.medya.trt.com.tr/master_720.m3u8', active: true },
+        { name: 'Bozuk Link (Test)', iframeUrl: 'about:blank', m3u8Url: 'https://example.com/not-a-real-stream.m3u8', active: true },
+        { name: 'Süper Lig Özel (Yakında)', iframeUrl: 'about:blank', m3u8Url: '', active: false },
+    ];
+    let currentChannelIndex = 0;
+    let streamType = 'iframe';
+    let hlsInstance = null;
+    const videoEl = document.getElementById('video-stream');
+    const iframeEl = document.getElementById('iframe-stream');
+    const channelListEl = document.getElementById('channel-list');
+    const matchTitleEl = document.getElementById('match-title');
+    const playerOverlay = document.getElementById('player-overlay');
+    const errorMessageEl = document.getElementById('error-message');
+    function renderChannelList() {
+        channelListEl.innerHTML = '';
+        channels.forEach((channel, index) => {
+            const channelDiv = document.createElement('div');
+            channelDiv.className = 'channel';
+            channelDiv.textContent = channel.name;
+            if (channel.active) { channelDiv.onclick = () => selectChannel(index); } 
+            else { channelDiv.classList.add('inactive'); }
+            channelListEl.appendChild(channelDiv);
+        });
+    }
+    function selectChannel(index) { currentChannelIndex = index; loadMedia(); }
+    function switchStream(type) {
+        streamType = type;
+        localStorage.setItem('preferredStreamType', type);
+        loadMedia();
+    }
+    function loadMedia() {
+        if (hlsInstance) { hlsInstance.destroy(); }
+        videoEl.style.display = 'none';
+        iframeEl.style.display = 'none';
+        playerOverlay.className = 'visible is-loading';
+        errorMessageEl.textContent = '';
+        const channel = channels[currentChannelIndex];
+        if (streamType === 'iframe') {
+            iframeEl.style.display = 'block';
+            iframeEl.src = channel.iframeUrl;
+            iframeEl.onload = () => { playerOverlay.className = ''; };
+            iframeEl.onerror = () => {
+                playerOverlay.className = 'visible has-error';
+                errorMessageEl.textContent = 'Kaynak yüklenemedi.';
+            };
+        } else {
+            videoEl.style.display = 'block';
+            if (Hls.isSupported() && channel.m3u8Url) {
+                hlsInstance = new Hls();
+                hlsInstance.loadSource(channel.m3u8Url);
+                hlsInstance.attachMedia(videoEl);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                    playerOverlay.className = '';
+                    videoEl.play();
+                });
+                hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        playerOverlay.className = 'visible has-error';
+                        errorMessageEl.textContent = 'Yayın Yüklenemedi (Hata Kodu: ' + data.type + ')';
+                    }
+                });
+            }
+        }
+        updateUI();
+    }
+    function updateUI() {
+        const channel = channels[currentChannelIndex];
+        matchTitleEl.textContent = channel.name;
+        document.getElementById('btn-iframe').classList.toggle('active', streamType === 'iframe');
+        document.getElementById('btn-m3u8').classList.toggle('active', streamType === 'm3u8');
+        document.querySelectorAll('.channel').forEach((el, index) => {
+            el.classList.toggle('active', index === currentChannelIndex);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedType = localStorage.getItem('preferredStreamType');
+        if (savedType) { streamType = savedType; }
+        renderChannelList();
+        const firstActiveIndex = channels.findIndex(c => c.active);
+        if (firstActiveIndex !== -1) { selectChannel(firstActiveIndex); } 
+        else {
+            matchTitleEl.textContent = "Aktif yayın bulunamadı.";
+            playerOverlay.className = 'visible has-error';
+            errorMessageEl.textContent = 'Gösterilecek aktif kanal yok.';
+        }
+    });
+</script>
+
+</!doctype>
